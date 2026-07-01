@@ -4,7 +4,6 @@ import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/fire
 import { db } from '../lib/firebase';
 import { UserProfile, UserRole } from '../types';
 import ProfileEditSection from './ProfileEditSection';
-import { isLocalMode, getLocalUsers } from '../lib/dbService';
 
 interface ProfessorViewProps {
   currentProfile: UserProfile;
@@ -21,12 +20,6 @@ export default function ProfessorView({ currentProfile, onLogout, onProfileUpdat
     const fetchStudents = async () => {
       setLoading(true);
       try {
-        if (isLocalMode()) {
-          const list = getLocalUsers().filter(u => u.role === UserRole.STUDENT && u.approved === true);
-          setStudents(list);
-          setLoading(false);
-          return;
-        }
         const q = query(
           collection(db, 'users'), 
           where('role', '==', UserRole.STUDENT),

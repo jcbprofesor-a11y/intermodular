@@ -1,7 +1,6 @@
 import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../lib/firebase';
-import { ShieldAlert, BookOpen, Sparkles, User, Shield, Users } from 'lucide-react';
-import { setLocalMode, setLocalActiveUser, getLocalUsers } from '../lib/dbService';
+import { ShieldAlert, BookOpen } from 'lucide-react';
 
 export default function Login({ onLogin }: { onLogin: () => void }) {
   const handleGoogleLogin = async () => {
@@ -12,16 +11,6 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
     } catch (error) {
       console.error("Error logging in with Google:", error);
     }
-  };
-
-  const handleDemoLogin = (userEmail: string) => {
-    setLocalMode(true);
-    const localUsers = getLocalUsers();
-    const matchedUser = localUsers.find(u => u.email === userEmail);
-    if (matchedUser) {
-      setLocalActiveUser(matchedUser);
-    }
-    onLogin();
   };
 
   return (
@@ -50,37 +39,6 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
             </svg>
             Acceder con Google
           </button>
-        </div>
-
-        {/* Sandbox Local Access Fallback */}
-        <div className="pt-2 border-t border-dashed border-slate-200">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 mb-3 uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5" />
-            Acceso Rápido Sandbox / Modo Demostración
-          </div>
-          <div className="grid grid-cols-1 gap-2">
-            <button 
-              onClick={() => handleDemoLogin('juan.codina@murciaeduca.es')}
-              className="flex items-center gap-3 px-3.5 py-2.5 bg-orange-50 hover:bg-orange-100 text-orange-800 rounded-xl text-xs font-bold transition-all border border-orange-200/50"
-            >
-              <Shield className="w-4 h-4 text-orange-500" />
-              <span>Entrar como Administrador (Juan Codina)</span>
-            </button>
-            <button 
-              onClick={() => handleDemoLogin('m.rodriguez@facultad.es')}
-              className="flex items-center gap-3 px-3.5 py-2.5 bg-sky-50 hover:bg-sky-100 text-sky-800 rounded-xl text-xs font-bold transition-all border border-sky-200/50"
-            >
-              <Users className="w-4 h-4 text-sky-500" />
-              <span>Entrar como Profesor (María Rodríguez)</span>
-            </button>
-            <button 
-              onClick={() => handleDemoLogin('j.sanchez92@university.edu')}
-              className="flex items-center gap-3 px-3.5 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl text-xs font-bold transition-all border border-emerald-200/50"
-            >
-              <User className="w-4 h-4 text-emerald-500" />
-              <span>Entrar como Alumno (Javier Sánchez)</span>
-            </button>
-          </div>
         </div>
 
         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex gap-3 items-start">

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { UserProfile } from '../types';
-import { isLocalMode, getLocalUsers, saveLocalUsers, setLocalActiveUser } from '../lib/dbService';
 
 const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
@@ -27,19 +26,6 @@ export default function ProfileEditSection({ profile, onUpdate }: ProfileEditSec
     setSaving(true);
     setSuccess(false);
     try {
-      if (isLocalMode()) {
-        const updatedProfile = { ...profile, displayName, photoURL };
-        setLocalActiveUser(updatedProfile);
-        
-        const local = getLocalUsers();
-        const updated = local.map(u => u.uid === profile.uid ? updatedProfile : u);
-        saveLocalUsers(updated);
-        
-        setSuccess(true);
-        onUpdate();
-        setTimeout(() => setSuccess(false), 3000);
-        return;
-      }
       const userRef = doc(db, 'users', profile.uid);
       await updateDoc(userRef, {
         displayName,

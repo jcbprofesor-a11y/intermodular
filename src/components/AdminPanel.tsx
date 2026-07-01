@@ -4,7 +4,6 @@ import { collection, query, where, getDocs, updateDoc, doc, deleteDoc } from 'fi
 import { UserProfile, UserRole } from '../types';
 import { Users, UserCheck, Shield, LogOut, UserPlus, RefreshCw, Trash2, Edit } from 'lucide-react';
 import ProfileEditSection from './ProfileEditSection';
-import { isLocalMode, getLocalUsers, saveLocalUsers } from '../lib/dbService';
 
 interface AdminPanelProps {
   currentProfile: UserProfile;
@@ -42,12 +41,6 @@ export default function AdminPanel({ currentProfile, onLogout, onProfileUpdate }
   const fetchPending = async () => {
     setLoading(true);
     try {
-      if (isLocalMode()) {
-        const users = getLocalUsers().filter(u => u.approved === false);
-        setPendingUsers(users);
-        setLoading(false);
-        return;
-      }
       const q = query(collection(db, 'users'), where('approved', '==', false));
       const querySnapshot = await getDocs(q);
       const users = querySnapshot.docs.map(docSnapshot => ({ uid: docSnapshot.id, ...docSnapshot.data() } as UserProfile));
@@ -62,12 +55,6 @@ export default function AdminPanel({ currentProfile, onLogout, onProfileUpdate }
   const fetchAllUsers = async () => {
     setLoading(true);
     try {
-      if (isLocalMode()) {
-        const users = getLocalUsers().filter(u => u.approved === true);
-        setAllUsers(users);
-        setLoading(false);
-        return;
-      }
       const q = query(collection(db, 'users'), where('approved', '==', true));
       const querySnapshot = await getDocs(q);
       const users = querySnapshot.docs.map(docSnapshot => ({ uid: docSnapshot.id, ...docSnapshot.data() } as UserProfile));
@@ -89,13 +76,6 @@ export default function AdminPanel({ currentProfile, onLogout, onProfileUpdate }
 
   const approveUser = async (uid: string) => {
     try {
-      if (isLocalMode()) {
-        const local = getLocalUsers();
-        const updated = local.map(u => u.uid === uid ? { ...u, approved: true } : u);
-        saveLocalUsers(updated);
-        setPendingUsers(prev => prev.filter(u => u.uid !== uid));
-        return;
-      }
       await updateDoc(doc(db, 'users', uid), { approved: true });
       setPendingUsers(prev => prev.filter(u => u.uid !== uid));
     } catch (err) {
@@ -105,14 +85,6 @@ export default function AdminPanel({ currentProfile, onLogout, onProfileUpdate }
 
   const updateUserRole = async (uid: string, newRole: UserRole) => {
     try {
-      if (isLocalMode()) {
-        const local = getLocalUsers();
-        const updated = local.map(u => u.uid === uid ? { ...u, role: newRole } : u);
-        saveLocalUsers(updated);
-        setAllUsers(prev => prev.map(u => u.uid === uid ? { ...u, role: newRole } : u));
-        setEditingUid(null);
-        return;
-      }
       await updateDoc(doc(db, 'users', uid), { role: newRole });
       setAllUsers(prev => prev.map(u => u.uid === uid ? { ...u, role: newRole } : u));
       setEditingUid(null);
@@ -124,14 +96,6 @@ export default function AdminPanel({ currentProfile, onLogout, onProfileUpdate }
   const deleteUser = async (uid: string) => {
     if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
       try {
-        if (isLocalMode()) {
-          const local = getLocalUsers();
-          const filtered = local.filter(u => u.uid !== uid);
-          saveLocalUsers(filtered);
-          setAllUsers(prev => prev.filter(u => u.uid !== uid));
-          setPendingUsers(prev => prev.filter(u => u.uid !== uid));
-          return;
-        }
         await deleteDoc(doc(db, 'users', uid));
         setAllUsers(prev => prev.filter(u => u.uid !== uid));
         setPendingUsers(prev => prev.filter(u => u.uid !== uid));

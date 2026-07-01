@@ -12,7 +12,6 @@ import ProfessorView from './components/ProfessorView';
 import StudentView from './components/StudentView';
 import Login from './components/Login';
 import { UserRole, UserProfile } from './types';
-import { isLocalMode, setLocalMode, getLocalActiveUser, setLocalActiveUser, getLocalUsers } from './lib/dbService';
 import { Shield, Users, User, Eye } from 'lucide-react';
 
 export default function App() {
@@ -35,54 +34,16 @@ export default function App() {
 
   const handleLogout = async () => {
     try {
-      if (isLocalMode()) {
-        setLocalMode(false);
-        setLocalActiveUser(null);
-        setUser(null);
-        setProfile(null);
-        setError(null);
-      } else {
-        await signOut(auth);
-        setError(null);
-      }
+      await signOut(auth);
+      setError(null);
     } catch (err) {
       console.error(err);
     }
   };
 
-  const handleActivateLocalMode = () => {
-    setLocalMode(true);
-    // Log in as Juan Codina Admin by default
-    const adminUser = getLocalUsers().find(u => u.email === 'juan.codina@murciaeduca.es') || {
-      uid: 'juan-codina-admin',
-      email: 'juan.codina@murciaeduca.es',
-      displayName: 'Juan Codina',
-      photoURL: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-      role: UserRole.ADMIN,
-      approved: true
-    };
-    setLocalActiveUser(adminUser);
-    setUser({ uid: adminUser.uid, email: adminUser.email, displayName: adminUser.displayName });
-    setProfile(adminUser);
-    setError(null);
-  };
-
   useEffect(() => {
     setLoading(true);
     setError(null);
-
-    if (isLocalMode()) {
-      const activeUser = getLocalActiveUser();
-      if (activeUser) {
-        setUser({ uid: activeUser.uid, email: activeUser.email, displayName: activeUser.displayName });
-        setProfile(activeUser);
-      } else {
-        setUser(null);
-        setProfile(null);
-      }
-      setLoading(false);
-      return;
-    }
 
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
@@ -154,27 +115,19 @@ export default function App() {
           <p className="text-slate-500 text-sm mb-6">
             {error.includes("offline") ? "No se pudo establecer conexión con la base de datos de Firebase porque estás sin conexión o la base de datos se está iniciando." : error}
           </p>
-          <div className="flex flex-col gap-2">
+          <div className="flex gap-2 justify-center">
             <button 
-              onClick={handleActivateLocalMode} 
-              className="w-full px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shadow-md transition-all flex items-center justify-center gap-2"
+              onClick={handleLogout} 
+              className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-50 transition-all"
             >
-              <span>Activar Modo Demostración Local (Bypass)</span>
+              Cerrar Sesión
             </button>
-            <div className="flex gap-2">
-              <button 
-                onClick={handleLogout} 
-                className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-50 transition-all"
-              >
-                Cerrar Sesión
-              </button>
-              <button 
-                onClick={() => setRetryTrigger(prev => prev + 1)} 
-                className="flex-1 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-bold shadow-md transition-all"
-              >
-                Reintentar
-              </button>
-            </div>
+            <button 
+              onClick={() => setRetryTrigger(prev => prev + 1)} 
+              className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shadow-md transition-all"
+            >
+              Reintentar
+            </button>
           </div>
         </div>
       </div>
@@ -223,13 +176,6 @@ export default function App() {
 
   // Reload handler helper to pass down
   const reloadProfile = async () => {
-    if (isLocalMode()) {
-      const activeUser = getLocalActiveUser();
-      if (activeUser) {
-        setProfile(activeUser);
-      }
-      return;
-    }
     if (!auth.currentUser) return;
     const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
     if (userDoc.exists()) {
