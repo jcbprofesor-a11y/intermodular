@@ -133,52 +133,133 @@ export default function App() {
   }, [retryTrigger]);
 
   if (error) {
+    const currentHostname = typeof window !== 'undefined' ? window.location.hostname : '';
+    const isOfflineOrInitial = error.toLowerCase().includes("offline") || error.toLowerCase().includes("unavailable") || error.toLowerCase().includes("failed-precondition") || error.toLowerCase().includes("permission");
+
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 font-sans p-6 text-center">
-        <div className="max-w-md bg-white p-8 rounded-2xl border border-slate-200 shadow-xl">
-          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center text-red-500 mx-auto mb-4 border border-red-100">
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 font-sans p-4 text-slate-900">
+        <div className="w-full max-w-2xl bg-white p-8 rounded-2xl border border-slate-200 shadow-xl space-y-6">
+          <div className="text-center space-y-2">
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center text-red-500 mx-auto border border-red-100">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h2 className="text-2xl font-black text-slate-800">Conexión con Firebase</h2>
+            <p className="text-slate-500 text-sm max-w-md mx-auto">
+              No se pudo inicializar o leer la base de datos de tu nuevo proyecto de Firebase. Sigue los pasos de configuración detallados abajo.
+            </p>
           </div>
-          <h2 className="text-xl font-bold text-slate-800 mb-2">Error de Conexión</h2>
-          <p className="text-slate-500 text-sm mb-6">
-            {error.includes("offline") ? "No se pudo establecer conexión con la base de datos de Firebase porque estás sin conexión o la base de datos se está iniciando." : error}
-          </p>
-          <div className="flex gap-2 justify-center">
+
+          {/* Diagnóstico técnico */}
+          <div className="bg-slate-950 text-slate-200 p-4 rounded-xl font-mono text-xs space-y-2 border border-slate-800 shadow-inner">
+            <div className="flex justify-between border-b border-slate-800 pb-1.5 text-slate-400 font-bold uppercase tracking-wider">
+              <span>Diagnóstico de Conexión</span>
+              <span className="text-red-400 animate-pulse">Error</span>
+            </div>
+            <p><span className="text-indigo-400 font-semibold">Proyecto ID:</span> studio-2572894554-33ff8</p>
+            <p><span className="text-indigo-400 font-semibold">Dominio App:</span> {currentHostname}</p>
+            <p className="whitespace-pre-wrap"><span className="text-indigo-400 font-semibold">Error técnico:</span> <span className="text-amber-400">{error}</span></p>
+          </div>
+
+          {/* Guía de Configuración Requerida */}
+          <div className="bg-indigo-50/50 border border-indigo-100 rounded-xl p-5 space-y-4">
+            <h3 className="text-sm font-bold text-indigo-900 flex items-center gap-2">
+              <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 2 0 00-2 2v12a2 2 2 0 002 2h10a2 2 2 0 002-2V7a2 2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+              </svg>
+              Pasos requeridos en tu consola de Firebase:
+            </h3>
+
+            <div className="space-y-3 text-xs text-indigo-950 leading-relaxed">
+              <div className="flex gap-2.5">
+                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600 text-white font-bold shrink-0 text-[10px]">1</span>
+                <div>
+                  <p className="font-bold">Crear la Base de Datos Firestore:</p>
+                  <p className="text-indigo-900/85">Ve a <a href="https://console.firebase.google.com/project/studio-2572894554-33ff8/firestore" target="_blank" rel="noreferrer" className="underline font-semibold text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-0.5">Firebase Console <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg></a>, haz clic en <b>"Crear base de datos"</b>, elige una ubicación y selecciona iniciar en <b>"Modo de prueba"</b> o "Modo producción".</p>
+                </div>
+              </div>
+
+              <div className="flex gap-2.5">
+                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600 text-white font-bold shrink-0 text-[10px]">2</span>
+                <div>
+                  <p className="font-bold">Habilitar Proveedor de Google Auth:</p>
+                  <p className="text-indigo-900/85">Ve a <a href="https://console.firebase.google.com/project/studio-2572894554-33ff8/authentication/providers" target="_blank" rel="noreferrer" className="underline font-semibold text-indigo-600 hover:text-indigo-800 inline-flex items-center gap-0.5">Authentication &gt; Sign-in method <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg></a>, haz clic en <b>"Añadir nuevo proveedor"</b> y habilita <b>Google</b>.</p>
+                </div>
+              </div>
+
+              <div className="flex gap-2.5">
+                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600 text-white font-bold shrink-0 text-[10px]">3</span>
+                <div>
+                  <p className="font-bold">Autorizar el Dominio de esta App:</p>
+                  <p className="text-indigo-900/85">En la misma pestaña de Authentication, ve a la pestaña <b>Ajustes (Settings)</b>, desplázate hasta <b>"Dominios autorizados"</b> y añade este dominio:</p>
+                  <code className="inline-block mt-1 bg-white px-2 py-1 rounded border border-indigo-200 font-mono text-[11px] font-bold text-indigo-700 select-all">{currentHostname}</code>
+                </div>
+              </div>
+
+              <div className="flex gap-2.5">
+                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600 text-white font-bold shrink-0 text-[10px]">4</span>
+                <div>
+                  <p className="font-bold">Reglas de Seguridad Permitidas:</p>
+                  <p className="text-indigo-900/85">En "Firestore Database" &gt; pestaña "Reglas", asegúrate de que tus reglas permitan acceso a los usuarios autenticados. Por ejemplo:</p>
+                  <pre className="mt-1 bg-white/80 p-2 rounded border border-indigo-100 font-mono text-[10px] text-slate-700 overflow-x-auto select-all">
+{`rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}`}
+                  </pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Botones de acción */}
+          <div className="flex flex-col sm:flex-row gap-3">
             <button 
               onClick={handleLogout} 
-              className="flex-1 px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-sm font-bold hover:bg-slate-50 transition-all"
+              className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all cursor-pointer"
             >
-              Cerrar Sesión
+              Cerrar Sesión / Volver a Login
             </button>
             <button 
               onClick={() => setRetryTrigger(prev => prev + 1)} 
-              className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shadow-md transition-all"
+              className="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
             >
-              Reintentar
+              <svg className="w-4 h-4 animate-spin-slow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 4.89M9 11l3 3L22 4" />
+              </svg>
+              <span>Probar Conexión de Nuevo</span>
             </button>
           </div>
-          <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-slate-100">
-            <button 
-              onClick={() => {
-                const demoProfile: UserProfile = {
-                  uid: 'demo-admin-uid',
-                  email: 'juan.codina@murciaeduca.es',
-                  displayName: 'Juan Codina (Bypass)',
-                  photoURL: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
-                  role: UserRole.ADMIN,
-                  approved: true
-                };
-                handleLocalBypass(demoProfile);
-              }}
-              className="w-full px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-bold shadow-md transition-all flex items-center justify-center gap-2"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              <span>Bypass: Entrar en Modo Demo (Admin)</span>
-            </button>
+
+          {/* Sandbox Local Access Fallback */}
+          <div className="pt-4 border-t border-slate-100">
+            <div className="text-center space-y-2">
+              <p className="text-xs text-slate-400 font-medium">¿Quieres usar la app sin configurar Firebase ahora mismo?</p>
+              <button 
+                onClick={() => {
+                  const demoProfile: UserProfile = {
+                    uid: 'demo-admin-uid',
+                    email: 'juan.codina@murciaeduca.es',
+                    displayName: 'Juan Codina (Bypass)',
+                    photoURL: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+                    role: UserRole.ADMIN,
+                    approved: true
+                  };
+                  handleLocalBypass(demoProfile);
+                }}
+                className="w-full px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                <span>Entrar en Modo Demostración Local (Bypass Admin)</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
