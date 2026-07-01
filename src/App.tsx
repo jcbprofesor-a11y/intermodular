@@ -21,6 +21,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [retryTrigger, setRetryTrigger] = useState(0);
   const [adminPerspective, setAdminPerspective] = useState<UserRole | null>(null);
+  const [isLocalMode, setIsLocalMode] = useState(false);
 
   useEffect(() => {
     if (profile && profile.email === 'juan.codina@murciaeduca.es') {
@@ -34,20 +35,48 @@ export default function App() {
 
   const handleLogout = async () => {
     try {
+      localStorage.removeItem('localUser');
       await signOut(auth);
+      setUser(null);
+      setProfile(null);
+      setIsLocalMode(false);
       setError(null);
     } catch (err) {
       console.error(err);
     }
   };
 
+  const handleLocalBypass = (selectedProfile: UserProfile) => {
+    localStorage.setItem('localUser', JSON.stringify(selectedProfile));
+    setUser({ uid: selectedProfile.uid, email: selectedProfile.email, displayName: selectedProfile.displayName });
+    setProfile(selectedProfile);
+    setIsLocalMode(true);
+    setError(null);
+  };
+
   useEffect(() => {
     setLoading(true);
     setError(null);
 
+    // Check for local bypass mode first
+    const localUserStr = localStorage.getItem('localUser');
+    if (localUserStr) {
+      try {
+        const localUser = JSON.parse(localUserStr);
+        setUser({ uid: localUser.uid, email: localUser.email, displayName: localUser.displayName });
+        setProfile(localUser);
+        setIsLocalMode(true);
+        setLoading(false);
+        return;
+      } catch (err) {
+        console.error("Failed to parse local user profile:", err);
+      }
+    }
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
+        setIsLocalMode(false);
         try {
           const userDocRef = doc(db, 'users', currentUser.uid);
           const userDoc = await getDoc(userDocRef);
@@ -96,6 +125,7 @@ export default function App() {
       } else {
         setUser(null);
         setProfile(null);
+        setIsLocalMode(false);
       }
       setLoading(false);
     });
@@ -129,6 +159,27 @@ export default function App() {
               Reintentar
             </button>
           </div>
+          <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-slate-100">
+            <button 
+              onClick={() => {
+                const demoProfile: UserProfile = {
+                  uid: 'demo-admin-uid',
+                  email: 'juan.codina@murciaeduca.es',
+                  displayName: 'Juan Codina (Bypass)',
+                  photoURL: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+                  role: UserRole.ADMIN,
+                  approved: true
+                };
+                handleLocalBypass(demoProfile);
+              }}
+              className="w-full px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg text-sm font-bold shadow-md transition-all flex items-center justify-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span>Bypass: Entrar en Modo Demo (Admin)</span>
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -144,7 +195,7 @@ export default function App() {
   }
 
   if (!user || !profile) {
-    return <Login onLogin={() => {}} />;
+    return <Login onLogin={() => setRetryTrigger(prev => prev + 1)} onLocalBypass={handleLocalBypass} />;
   }
 
   if (!profile.approved) {
@@ -176,6 +227,13 @@ export default function App() {
 
   // Reload handler helper to pass down
   const reloadProfile = async () => {
+    if (isLocalMode) {
+      const localUserStr = localStorage.getItem('localUser');
+      if (localUserStr) {
+        setProfile(JSON.parse(localUserStr));
+      }
+      return;
+    }
     if (!auth.currentUser) return;
     const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
     if (userDoc.exists()) {

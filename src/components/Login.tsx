@@ -1,9 +1,16 @@
 import { useState } from 'react';
 import { signInWithPopup, signInWithRedirect, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '../lib/firebase';
-import { ShieldAlert, BookOpen, AlertCircle, Globe, ExternalLink } from 'lucide-react';
+import { ShieldAlert, BookOpen, AlertCircle, Globe, ExternalLink, Sparkles, Shield, Users, User } from 'lucide-react';
+import { UserProfile, UserRole } from '../types';
 
-export default function Login({ onLogin }: { onLogin: () => void }) {
+export default function Login({ 
+  onLogin, 
+  onLocalBypass 
+}: { 
+  onLogin: () => void;
+  onLocalBypass?: (profile: UserProfile) => void;
+}) {
   const [error, setError] = useState<string | null>(null);
   const [showDomains, setShowDomains] = useState(false);
 
@@ -28,6 +35,42 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
         setError(err.message || "Ha ocurrido un error al iniciar sesión con Google.");
       }
     }
+  };
+
+  const handleDemoLogin = (userEmail: string) => {
+    if (!onLocalBypass) return;
+    
+    let demoProfile: UserProfile;
+    if (userEmail === 'juan.codina@murciaeduca.es') {
+      demoProfile = {
+        uid: 'demo-admin-uid',
+        email: 'juan.codina@murciaeduca.es',
+        displayName: 'Juan Codina',
+        photoURL: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+        role: UserRole.ADMIN,
+        approved: true
+      };
+    } else if (userEmail === 'm.rodriguez@facultad.es') {
+      demoProfile = {
+        uid: 'demo-prof-uid',
+        email: 'm.rodriguez@facultad.es',
+        displayName: 'María Rodríguez',
+        photoURL: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+        role: UserRole.PROFESSOR,
+        approved: true
+      };
+    } else {
+      demoProfile = {
+        uid: 'demo-stud-uid',
+        email: 'j.sanchez92@university.edu',
+        displayName: 'Javier Sánchez',
+        photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+        role: UserRole.STUDENT,
+        approved: true
+      };
+    }
+    
+    onLocalBypass(demoProfile);
   };
 
   return (
@@ -116,11 +159,42 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
 
           <button 
             onClick={() => setShowDomains(!showDomains)}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-semibold transition-all"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl text-xs font-semibold transition-all cursor-pointer"
           >
             <Globe className="w-3.5 h-3.5 text-slate-500" />
             <span>Ver Dominios a Autorizar en Firebase</span>
           </button>
+        </div>
+
+        {/* Sandbox Local Access Fallback */}
+        <div className="pt-2 border-t border-dashed border-slate-200 space-y-2">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 mb-1.5 uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5" />
+            Acceso Rápido Sandbox / Modo Demostración
+          </div>
+          <div className="grid grid-cols-1 gap-2">
+            <button 
+              onClick={() => handleDemoLogin('juan.codina@murciaeduca.es')}
+              className="flex items-center gap-3 px-3.5 py-2 bg-orange-50 hover:bg-orange-100 text-orange-800 rounded-xl text-xs font-bold transition-all border border-orange-200/50 cursor-pointer"
+            >
+              <Shield className="w-4 h-4 text-orange-500 shrink-0" />
+              <span>Entrar como Administrador (Juan Codina)</span>
+            </button>
+            <button 
+              onClick={() => handleDemoLogin('m.rodriguez@facultad.es')}
+              className="flex items-center gap-3 px-3.5 py-2 bg-sky-50 hover:bg-sky-100 text-sky-800 rounded-xl text-xs font-bold transition-all border border-sky-200/50 cursor-pointer"
+            >
+              <Users className="w-4 h-4 text-sky-500 shrink-0" />
+              <span>Entrar como Profesor (María Rodríguez)</span>
+            </button>
+            <button 
+              onClick={() => handleDemoLogin('j.sanchez92@university.edu')}
+              className="flex items-center gap-3 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl text-xs font-bold transition-all border border-emerald-200/50 cursor-pointer"
+            >
+              <User className="w-4 h-4 text-emerald-500 shrink-0" />
+              <span>Entrar como Alumno (Javier Sánchez)</span>
+            </button>
+          </div>
         </div>
 
         <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex gap-3 items-start">
