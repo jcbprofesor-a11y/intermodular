@@ -1,8 +1,16 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import config from '../../firebase-applet-config.json';
 
-const app = initializeApp(config);
-export const db = getFirestore(app, config.firestoreDatabaseId || '(default)');
+const firebaseConfig = {
+  apiKey: "AIzaSyCc5i_S7nINaF021870fNFwmlHRJIHznW0",
+  authDomain: "studio-2572894554-33ff8.firebaseapp.com",
+  projectId: "studio-2572894554-33ff8",
+  storageBucket: "studio-2572894554-33ff8.firebasestorage.app",
+  messagingSenderId: "44165043870",
+  appId: "1:44165043870:web:00d25e4d9f7b9ce119cd8f"
+};
+
+const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
 export const auth = getAuth(app);
