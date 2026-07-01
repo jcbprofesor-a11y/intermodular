@@ -1,0 +1,6 @@
+{
+  "name": "Plataforma de Gestión de Alumnos",
+  "description": "Plataforma de gestión de alumnos con niveles de acceso: Administrador, Profesor y Alumno. Registro con aprobación manual.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
